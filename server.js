@@ -15,13 +15,13 @@ var jwt = require('jsonwebtoken');
 var cors = require('cors');
 
 var app = express();
-app.use(cors());
-app.use(bodyParser.json());
+app.use(cors()); // allowing browser to call
+app.use(bodyParser.json()); // using a json parser, so we don't have to do json.parse all the time
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(passport.initialize());
 
-var router = express.Router();
+var router = express.Router(); // so we can use get requests
 
 function getJSONObjectForMovieRequirement(req) {
     var json = {
@@ -42,9 +42,10 @@ function getJSONObjectForMovieRequirement(req) {
 }
 
 router.post('/signup', function(req, res) {
+    // if no username or password then return return failure with message
     if (!req.body.username || !req.body.password) {
         res.json({success: false, msg: 'Please include both username and password to signup.'})
-    } else {
+    } else { // else create new user
         var newUser = {
             username: req.body.username,
             password: req.body.password
@@ -72,7 +73,7 @@ router.post('/signin', function (req, res) {
     }
 });
 
-router.route('/testcollection')
+router.route('/movies')
     .delete(authController.isAuthenticated, function(req, res) {
         console.log(req.body);
         res = res.status(200);
