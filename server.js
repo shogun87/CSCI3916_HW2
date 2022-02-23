@@ -27,7 +27,9 @@ function getJSONObjectForMovieRequirement(req) {
     var json = {
         headers: "No headers",
         key: process.env.UNIQUE_KEY,
-        body: "No body"
+        body: "No body",
+        message: "",            // added message parameter to send back in response
+        query: ""               // added query parameter to send back queries in response
     };
 
     if (req.body != null) {
@@ -62,7 +64,7 @@ router.post('/signin', function (req, res) {
     if (!user) {
         res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
     } else {
-        if (req.body.password == user.password) {
+        if (req.body.password === user.password) {
             var userToken = { id: user.id, username: user.username };
             var token = jwt.sign(userToken, process.env.SECRET_KEY);
             res.json ({success: true, token: 'JWT ' + token});
@@ -73,27 +75,53 @@ router.post('/signin', function (req, res) {
     }
 });
 
+// Movie route
 router.route('/movies')
-    .delete(authController.isAuthenticated, function(req, res) {
-        console.log(req.body);
-        res = res.status(200);
+    // GET functionality
+    .get(function(req, res) {
+        res = res.status(200);          // return status of 200
         if (req.get('Content-Type')) {
             res = res.type(req.get('Content-Type'));
         }
-        var o = getJSONObjectForMovieRequirement(req);
+        var o = getJSONObjectForMovieRequirement(req);  // create json object
+        o.message = "GET movies"        // change the json message
+        o.query = req.query;            // change the json query info to user query, if there was one
         res.json(o);
-    }
-    )
+    })
+    // POST functionality
+    .post(function(req, res) {
+        res = res.status(200);          // return status of 200
+        if (req.get('Content-Type')) {
+            res = res.type(req.get('Content-Type'));
+        }
+        var o = getJSONObjectForMovieRequirement(req);  // create json object
+        o.message = "movie saved"       // change the json message
+        o.query = req.query;            // change the json query info to user query, if there was one
+        res.json(o);
+    })
     .put(authJwtController.isAuthenticated, function(req, res) {
         console.log(req.body);
-        res = res.status(200);
+        res = res.status(200);          // return status of 200
         if (req.get('Content-Type')) {
             res = res.type(req.get('Content-Type'));
         }
-        var o = getJSONObjectForMovieRequirement(req);
+        var o = getJSONObjectForMovieRequirement(req);  // create json object
+        o.message = "movie updated"     // change the json message
+        o.query = req.query;            // change the json query info to user query, if there was one
         res.json(o);
-    }
-    );
+    })
+    .delete(authController.isAuthenticated, function(req, res) {
+        console.log(req.body);
+        res = res.status(200);          // return status of 200
+        if (req.get('Content-Type')) {
+            res = res.type(req.get('Content-Type'));
+        }
+        var o = getJSONObjectForMovieRequirement(req);  // create json object
+        o.message = "movie deleted"     // change the json message
+        o.query = req.query;            // change the json query info to user query, if there was one
+        res.json(o);
+    });
+
 
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
